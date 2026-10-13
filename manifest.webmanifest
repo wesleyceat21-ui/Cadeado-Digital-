@@ -1,0 +1,14 @@
+{
+  "name": "O Cadeado — Wesley & Nathália",
+  "short_name": "O Cadeado",
+  "description": "Cadeado digital do casamento de Wesley e Nathália.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11100e",
+  "theme_color": "#11100e",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

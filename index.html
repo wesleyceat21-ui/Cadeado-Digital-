@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#11100e">
+  <meta name="description" content="Cadeado digital do casamento de Wesley e Nathália.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <title>O Cadeado — Wesley & Nathália</title>
+  <style>
+    :root { color-scheme: dark; --gold:#d7b56d; --bg:#11100e; --panel:#24221d; --muted:#b9b1a1; --line:#55472e; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#29251b 0%,var(--bg) 55%); color:#f7f0e2; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+    main { width:min(100%,560px); margin:auto; padding:22px 16px 38px; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+    .eyebrow { color:var(--gold); letter-spacing:.14em; font-size:.7rem; font-weight:700; }
+    h1 { margin:4px 0; font-size:1.65rem; }
+    .sub { color:var(--muted); font-size:.9rem; }
+    .emblem { width:54px;height:54px;border:1px solid #806b3f;border-radius:16px;display:grid;place-items:center;color:var(--gold);font-size:1.8rem; }
+    .panel { background:rgba(36,34,29,.94); border:1px solid #3e392e; border-radius:18px; padding:16px; margin:14px 0; }
+    .center { text-align:center; }
+    .label { color:#c8b88f; font-size:.8rem; letter-spacing:.06em; }
+    .discs { display:flex; justify-content:center; gap:10px; margin:14px 0; }
+    .disc { width:76px; height:88px; border:1px solid #76613b; border-radius:13px; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#262520; }
+    .disc.fixed { background:var(--gold); color:#17130b; }
+    .digit { font-size:2rem; font-weight:750; line-height:1.1; }
+    .disc small { font-size:.58rem; margin-top:7px; opacity:.8; }
+    .stats { display:flex; justify-content:space-between; color:#d8d0c0; font-size:.85rem; margin-bottom:9px; }
+    .bar { height:6px; border-radius:9px; background:#464138; overflow:hidden; }
+    .bar > div { height:100%; background:var(--gold); width:100%; transition:width .2s; }
+    .grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+    .num { border:1px solid #454137; background:#272621; color:#f4efe4; border-radius:9px; min-height:43px; font-size:.95rem; font-weight:600; }
+    .num.selected { background:var(--gold); color:#17130b; border-color:#f0d69a; }
+    .num.used { background:#49292a; color:#d3a3a3; text-decoration:line-through; }
+    .num:disabled { opacity:.78; }
+    button, input { font:inherit; }
+    .primary { width:100%; min-height:48px; background:var(--gold); color:#17130b; font-weight:750; border:0; border-radius:12px; padding:12px; }
+    .secondary { background:transparent; color:#f4efe4; border:1px solid #716344; border-radius:10px; padding:10px 12px; }
+    .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .price { color:var(--gold); font-weight:800; font-size:1.4rem; }
+    .note { color:var(--muted); font-size:.8rem; line-height:1.45; }
+    .notice { border-radius:10px; background:#302b20; color:#f0dba8; padding:12px; font-size:.88rem; margin-top:10px; }
+    .success { text-align:center; padding:18px 8px; }
+    .success .big { font-size:2.5rem; color:var(--gold); }
+    .hidden { display:none !important; }
+    footer { text-align:center; color:#8f897d; font-size:.72rem; padding:16px 8px; line-height:1.5; }
+    @media (max-width:360px) { .grid { gap:4px; } .num { min-height:39px; } .disc { width:68px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <div class="eyebrow">WEDDING EDITION</div>
+      <h1>O Cadeado</h1>
+      <div class="sub">Wesley & Nathália · 07.11.2026</div>
+    </div>
+    <div class="emblem" aria-hidden="true">♙</div>
+  </header>
+
+  <section class="panel center">
+    <div class="label" id="statusLabel">DESCUBRA A COMBINAÇÃO</div>
+    <div class="discs" aria-label="Combinação">
+      <div class="disc fixed"><div class="digit">0</div><small>FIXO</small></div>
+      <div class="disc"><div class="digit" id="d1">0</div><small>DEZENA</small></div>
+      <div class="disc"><div class="digit" id="d2">1</div><small>UNIDADE</small></div>
+    </div>
+    <div class="sub">Escolha um número de 01 a 99</div>
+  </section>
+
+  <section class="panel">
+    <div class="stats"><span>Tentativas restantes</span><strong><span id="remaining">99</span>/99</strong></div>
+    <div class="bar"><div id="progress"></div></div>
+  </section>
+
+  <section class="panel">
+    <div class="row" style="margin-bottom:12px">
+      <strong>Escolha suas tentativas</strong>
+      <span class="sub" id="selectedCount">0 selecionadas</span>
+    </div>
+    <div class="grid" id="numberGrid"></div>
+    <div class="row" style="margin-top:14px">
+      <span class="sub">R$ 10 por tentativa</span>
+      <span class="price" id="total">R$ 0,00</span>
+    </div>
+    <button class="primary" id="payButton" style="margin-top:12px">Continuar para pagamento</button>
+    <div id="notice" class="notice hidden" role="status"></div>
+  </section>
+
+  <section class="panel hidden" id="paymentPanel">
+    <strong>Pagamento Pix</strong>
+    <p class="note">Esta versão é uma demonstração visual. A integração real com o Mercado Pago ainda não foi conectada; não faça pagamentos por esta tela.</p>
+    <div class="notice">O QR Code e a liberação automática serão ativados após configurar a aplicação, o servidor e o webhook do Mercado Pago.</div>
+  </section>
+
+  <section class="panel hidden" id="winPanel">
+    <div class="success">
+      <div class="big">🔓</div>
+      <h2>Parabéns!</h2>
+      <p>Você descobriu a combinação do cadeado.</p>
+    </div>
+  </section>
+
+  <footer>
+    Protótipo inicial — não processa pagamentos nem registra compras reais.<br>
+    A combinação secreta deve ficar protegida no servidor na versão publicada.
+  </footer>
+</main>
+<script>
+  const grid = document.getElementById('numberGrid');
+  const d1 = document.getElementById('d1');
+  const d2 = document.getElementById('d2');
+  const total = document.getElementById('total');
+  const count = document.getElementById('selectedCount');
+  const remaining = document.getElementById('remaining');
+  const progress = document.getElementById('progress');
+  const notice = document.getElementById('notice');
+  const paymentPanel = document.getElementById('paymentPanel');
+  const selected = new Set();
+  const used = new Set();
+  // Somente demonstração local: a combinação correta ainda não está configurada.
+  let demoSecret = null;
+  let locked = false;
+
+  function money(n) { return n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+  function update() {
+    count.textContent = `${selected.size} selecionada${selected.size===1?'':'s'}`;
+    total.textContent = money(selected.size*10);
+    remaining.textContent = 99-used.size;
+    progress.style.width = `${(99-used.size)/99*100}%`;
+    const pick = [...selected].sort()[0] || '01';
+    d1.textContent = pick[0]; d2.textContent = pick[1];
+    grid.querySelectorAll('button').forEach(b=>{
+      const n=b.dataset.number;
+      b.classList.toggle('selected',selected.has(n));
+      b.classList.toggle('used',used.has(n));
+      b.disabled=used.has(n)||locked;
+      b.setAttribute('aria-pressed',selected.has(n)?'true':'false');
+    });
+  }
+  for(let i=1;i<=99;i++){
+    const n=String(i).padStart(2,'0');
+    const b=document.createElement('button');
+    b.className='num'; b.textContent=n; b.dataset.number=n;
+    b.addEventListener('click',()=>{
+      if(selected.has(n)) selected.delete(n);
+      else selected.add(n);
+      notice.classList.add('hidden'); update();
+    });
+    grid.appendChild(b);
+  }
+  document.getElementById('payButton').addEventListener('click',()=>{
+    if(selected.size===0){
+      notice.textContent='Selecione pelo menos uma tentativa.';
+      notice.classList.remove('hidden'); return;
+    }
+    paymentPanel.classList.remove('hidden');
+    notice.textContent=`Pedido demonstrativo: ${selected.size} tentativa(s), total de ${money(selected.size*10)}. Nenhuma cobrança foi criada.`;
+    notice.classList.remove('hidden');
+    paymentPanel.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+  update();
+  if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+    window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  }
+</script>
+</body>
+</html>
